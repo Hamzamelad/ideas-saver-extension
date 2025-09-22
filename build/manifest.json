@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "Ideas Saver",
+    "version": "1.0",
+    "description": "Quickly capture ideas and browse them later",
+    "action": {
+        "default_popup": "index.html",
+        "default_icon": "icons/icon-96.png"
+    },
+    "permissions": ["storage", "commands"],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "icons": {
+        "32": "icons/icon-48.png",
+        "64": "icons/icon-96.png"
+    },
+    "commands": {
+        "open-ideas-saver": {
+            "suggested_key": {
+                "default": "Ctrl+I",
+                "mac": "Command+I"
+            },
+            "description": "Open Ideas Saver popup"
+        }
+    }
+}
