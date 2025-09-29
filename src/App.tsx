@@ -1,10 +1,16 @@
-import { Lightbulb, Plus, Trash2 } from 'lucide-react'
+import { Lightbulb, Plus, Trash2, Archive } from 'lucide-react'
 
 import { Button, buttonVariants } from './components/ui/button'
 import { cn } from './lib/utils'
 import IdeaCard from './components/idea-card'
 import { getChrome } from './lib/get-chrome'
 import { useIdeas } from './components/ideas-context'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from './components/ui/tabs'
 
 
 function App() {
@@ -29,31 +35,72 @@ function App() {
       ...prev
     }))
   }
+
   const handleClear = async () => {
     await chrome.storage.sync.clear()
     setIdeas([])
   }
 
+  const handleArchiveAll = () => {
+    const newIdeas = Object.fromEntries(
+      Object.entries(ideas).map(([id, idea]) => [
+        id,
+        { ...idea, archived: true }
+      ])
+    );
+    setIdeas(newIdeas);
+    chrome.storage.sync.set(newIdeas);
+  }
+
+
   return (
     <div className="w-[600px]">
-      <header className="border-b ">
-        <div className="container mx-auto border-x px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Lightbulb className="size-8 text-primary/80" />
-            <h1 className="font-bold">Ideas Notebook</h1>
+      <Tabs>
+        <header className="border-b ">
+          <div className="container mx-auto border-x px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="size-8 text-primary/80" />
+              <h1 className="font-bold">Ideas Notebook</h1>
+            </div>
+            <TabsList className="flex gap-1">
+              <TabsTrigger value='box'>
+                Box
+              </TabsTrigger>
+              <TabsTrigger value='archive'>
+                Archive
+              </TabsTrigger>
+              {/* <Button size={'icon'} variant="ghost" onClick={handleClear}><Trash2 /></Button>
+            <Button size={'icon'} variant="ghost" onClick={handleAdd}><Plus /></Button> */}
+            </TabsList>
           </div>
-          <div className="flex gap-1">
-            <Button size={'icon'} variant="ghost" onClick={handleClear}><Trash2 /></Button>
-            <Button size={'icon'} variant="ghost" onClick={handleAdd}><Plus /></Button>
-          </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container mx-auto border-x min-h-[calc(100vh-90px)] p-4 box-border space-y-2">
-        {Object.values(ideas).length === 0 && <p className='text-center text-muted-foreground'>No ideas yet!</p>}
-        {ideas && Object.values(ideas).map(idea => <IdeaCard key={idea.id} idea={idea} />)}
-      </main>
+        <main className="container mx-auto border-x min-h-[calc(100vh-90px)] p-4 box-border space-y-2">
+          <TabsContent value='box' className='pt-0'>
+            <div className='flex gap-2'>
 
+              <Button variant="ghost" onClick={handleAdd}>
+                <Plus />
+                Add Idea
+              </Button>
+              <Button variant="ghost" onClick={handleArchiveAll}>
+                <Archive />
+                Archive All
+              </Button>
+              <Button variant="ghost" onClick={handleClear}>
+                <Trash2 />
+                Clear All
+              </Button>
+            </div>
+            {Object.values(ideas).length === 0 && <p className='text-center text-muted-foreground'>No ideas yet!</p>}
+            {ideas && Object.values(ideas).filter(item => !item?.archived).map(idea => <IdeaCard key={idea.id} idea={idea} />)}
+          </TabsContent>
+          <TabsContent value='archive' className='pt-0'>
+            {Object.values(ideas).filter(item => item?.archived).length === 0 && <p className='text-center text-muted-foreground'>No archived ideas yet!</p>}
+            {ideas && Object.values(ideas).filter(item => item?.archived).map(idea => <IdeaCard key={idea.id} idea={idea} />)}
+          </TabsContent>
+        </main>
+      </Tabs>
       <footer className="border-t">
         <div className="container mx-auto border-x">
           <p className="text-sm text-muted-foreground text-center">
